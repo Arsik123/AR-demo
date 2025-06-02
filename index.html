@@ -1,34 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-    <!-- A-Frame 1.4.2 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"
-            integrity="sha512-gvKCsJ6vAHrQasHK2ZGsPNWRlop+VOjB8cV2z3p/JjjS5TmZMAsBjLFoGBHw3v0/WwhmfAMXrf4E57c7xNxqfQ=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <!-- AR.js 2.1.1 (A-Frame build) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ar.js/2.1.1/aframe-ar.min.js"
-            integrity="sha512-oHg9DWy+UM9QsbmcjntbyqfsPuqwYUA7NKoQI6jhZYWU3XeZ+sk7Q98K9F9N5awpXn7yYoSYB6AJyGexZQVgRw=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <style>body{margin:0;overflow:hidden}</style>
-  </head>
-
-  <body>
-    <a-scene
-      embedded
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- A-Frame 1.4.2 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>body{margin:0;overflow:hidden}</style>
+</head>
+<body>
+  <a-scene
+      mindar-image="imageTargetSrc: marker.mind; uiScanning: no;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
-      arjs="sourceType: webcam; debugUIEnabled: false;">
-      
-      <!-- ваш собственный паттерн -->
-      <a-marker type="pattern" url="marker.patt">
-        <a-entity gltf-model="model.glb" scale="0.5 0.5 0.5"></a-entity>
-      </a-marker>
+      device-orientation-permission-ui="enabled: false">
 
-      <a-entity camera></a-entity>
-    </a-scene>
-  </body>
+    <a-assets>
+      <a-asset-item id="model" src="model.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- target 0 = единственный маркер из marker.mind -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-gltf-model src="#model" scale="0.5 0.5 0.5"></a-gltf-model>
+    </a-entity>
+
+    <a-camera position="0 0 0"></a-camera>
+  </a-scene>
+</body>
 </html>
