@@ -2,45 +2,30 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]      # будет собирать при каждом push в main
-  workflow_dispatch:        # + возможность запустить вручную
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    # 3.1 код проекта
-    - uses: actions/checkout@v4
+      # 1. Код
+      - uses: actions/checkout@v4
 
-    # 3.2 Node + npm
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 18
+      # 2. Node
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-    # 3.3 Устанавливаем зависимости
-    - run: npm ci
+      # 3. Зависимости
+      - run: npm install
 
-    # 3.4 Инициализируем Capacitor (неинтерактивно)
-    - run: npx cap init "MindAR Demo" com.example.mindar --web-dir=www --npm-client=npm --no-color || true
+      # 4-5. Ваши шаги cap init / cap add / gradlew …
+      # (оставьте как было, главное — внутри `steps`)
 
-    # 3.5 Добавляем Android-платформу
-    - run: npx cap add android --skip-build || true
-
-    # 3.6 Ставим Crosswalk-WebView (минимальный Chromium)
-    - run: npm install --save crosswalk-lite-cordova-plugin
-    - run: npx cap sync android
-
-    # 3.7 Готовим Android SDK
-    - uses: android-actions/setup-android@v2   # скачивает sdkmanager, build-tools
-      with:
-        api-level: 34
-
-    # 3.8 Собираем debug-APK
-    - run: cd android && ./gradlew assembleDebug
-
-    # 3.9 Загружаем artefact
-    - uses: actions/upload-artifact@v3
-      with:
-        name: mindar-apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+      # 6. Выгрузка APK
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mindar-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
