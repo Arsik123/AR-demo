@@ -2,30 +2,44 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches: [ main ]       # собираем при каждом push в main
+  workflow_dispatch:         # + кнопка «Run workflow» вручную
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # остаётся 22.04 или 24.04 — не важно
     steps:
-      # 1. Код
+      # 1. Код репозитория
       - uses: actions/checkout@v4
 
-      # 2. Node
+      # 2. Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # 3. Зависимости
-      - run: npm install
+      # 3. Установка зависимостей
+      - name: Install npm deps
+        run: npm install        # если lock-файла нет, используем install
 
-      # 4-5. Ваши шаги cap init / cap add / gradlew …
-      # (оставьте как было, главное — внутри `steps`)
+      # 4–6. Ваши шаги Capacitor / Crosswalk / Gradle
+      - name: Capacitor init & android
+        run: |
+          npx cap init "MindAR Demo" com.example.mindar --web-dir=www --npm-client=npm --no-color || true
+          npx cap add android --skip-build || true
+          npm install --save crosswalk-lite-cordova-plugin
+          npx cap sync android
 
-      # 6. Выгрузка APK
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v3
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+
+      - name: Build debug APK
+        run: cd android && ./gradlew assembleDebug
+
+      # 7. Загрузка артефакта — теперь версия **v4**
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: mindar-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
