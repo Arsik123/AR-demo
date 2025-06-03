@@ -1,43 +1,38 @@
-name: Build Crosswalk-APK
+name: Build Crosswalk APK
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:         # кнопка “Run workflow” в UI
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # 1‒ исходный код
     - uses: actions/checkout@v4
 
-    # 2‒ Node 18
     - uses: actions/setup-node@v4
       with:
         node-version: 18
 
-    # 3‒ npm install (core, cli, android, crosswalk-плагин)
+    # ⬇️ 1. ставим всё из package.json (crosswalk, permissions, cli, android)
     - run: npm ci || npm install
 
-    # 4‒ Capacitor init (повторяем без ошибок, поэтому `|| true`)
-    - name: Capacitor init / add android
-      run: |
-        npx cap init "MindAR Demo" com.example.mindar --web-dir=www || true
-        npx cap add android || true
+    # ⬇️ 2. создаём / обновляем платформу Android
+    - run: npx cap init "MindAR Demo" com.example.mindar --web-dir=www --npm-client=npm || true
+    - run: npx cap add android || true
+    - run: npx cap sync android            # копирует плагины
 
-    # 6‒ синхронизируем плагин crosswalk
-    - run: npx cap sync android
+    # ⬇️ 3. устанавливаем Android-SDK 34
+    - uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
 
-    # 7‒ Android SDK (34)
-    - uses: android-actions/setup-android@v2
-      with: { api-level: 34 }
-
-    # 8‒ сборка debug-APK
+    # ⬇️ 4. собираем debug-apk
     - run: cd android && ./gradlew assembleDebug
 
-    # 9‒ выгружаем artefact
+    # ⬇️ 5. выкладываем artefact
     - uses: actions/upload-artifact@v4
       with:
         name: mindar-apk
