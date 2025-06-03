@@ -27,15 +27,6 @@ jobs:
         npx cap init "MindAR Demo" com.example.mindar --web-dir=www || true
         npx cap add android || true
 
-    # 5‒ дописываем CAMERA-permission в манифест
-    - name: Add camera permission
-      run: |
-        MANIFEST="android/app/src/main/AndroidManifest.xml"
-        grep CAMERA "$MANIFEST" || \
-        sed -i '2i\
-        <uses-permission android:name="android.permission.CAMERA"/>\n\
-        <uses-feature android:name="android.hardware.camera.any"/>' "$MANIFEST"
-
     # 6‒ синхронизируем плагин crosswalk
     - run: npx cap sync android
 
