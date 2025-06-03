@@ -32,8 +32,7 @@ jobs:
 
     # 7‒ Android SDK (34)
     - uses: android-actions/setup-android@v2
-      with:
-        api-level: 34
+      with: { api-level: 34 }
 
     # 8‒ сборка debug-APK
     - run: cd android && ./gradlew assembleDebug
