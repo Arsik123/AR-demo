@@ -11,7 +11,8 @@
   },
   "cordova": {
     "plugins": {
-      "cordova-plugin-crosswalk-webview": {}
+      "cordova-plugin-crosswalk-webview": {},
+      "cordova-plugin-android-permissions": {}
     }
   }
 }
