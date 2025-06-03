@@ -26,7 +26,6 @@ jobs:
         run: |
           npx cap init "MindAR Demo" com.example.mindar --web-dir=www --npm-client=npm --no-color || true
           npx cap add android --skip-build || true
-          npm install --save crosswalk-lite-cordova-plugin
           npx cap sync android
 
       - name: Set up Android SDK
