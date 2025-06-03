@@ -1,43 +1,54 @@
-name: Build APK
+name: Build Crosswalk-APK
 
 on:
   push:
-    branches: [ main ]    # запускается при каждом push в main
-  workflow_dispatch:      # можно стартовать вручную
+    branches: [ main ]
+  workflow_dispatch:         # кнопка “Run workflow” в UI
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. код
-      - uses: actions/checkout@v4
+    # 1‒ исходный код
+    - uses: actions/checkout@v4
 
-      # 2. Node
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    # 2‒ Node 18
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
 
-      # 3. зависимости (подтянет crosswalk-плагин)
-      - run: npm install
+    # 3‒ npm install (core, cli, android, crosswalk-плагин)
+    - run: npm ci || npm install
 
-      # 4. Capacitor: init (если первый раз) и android-платформа
-      - name: Capacitor init & add android
-        run: |
-          npx cap init "MindAR Demo" com.example.mindar --web-dir=www || true
-          npx cap add android || true
-          npx cap sync android
+    # 4‒ Capacitor init (повторяем без ошибок, поэтому `|| true`)
+    - name: Capacitor init / add android
+      run: |
+        npx cap init "MindAR Demo" com.example.mindar --web-dir=www || true
+        npx cap add android || true
 
-      # 5. Android SDK
-      - uses: android-actions/setup-android@v2
-        with:
-          api-level: 34
+    # 5‒ дописываем CAMERA-permission в манифест
+    - name: Add camera permission
+      run: |
+        MANIFEST="android/app/src/main/AndroidManifest.xml"
+        grep CAMERA "$MANIFEST" || \
+        sed -i '2i\
+        <uses-permission android:name="android.permission.CAMERA"/>\n\
+        <uses-feature android:name="android.hardware.camera.any"/>' "$MANIFEST"
 
-      # 6. сборка debug-apk
-      - run: cd android && ./gradlew assembleDebug
+    # 6‒ синхронизируем плагин crosswalk
+    - run: npx cap sync android
 
-      # 7. артефакт
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mindar-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+    # 7‒ Android SDK (34)
+    - uses: android-actions/setup-android@v2
+      with:
+        api-level: 34
+
+    # 8‒ сборка debug-APK
+    - run: cd android && ./gradlew assembleDebug
+
+    # 9‒ выгружаем artefact
+    - uses: actions/upload-artifact@v4
+      with:
+        name: mindar-apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk
